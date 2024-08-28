@@ -1,0 +1,43 @@
+name: Trigger auto deployment for john-containerapp
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '**'
+    - '.github/workflows/john-containerapp-AutoDeployTrigger-5a0c9585-787d-4fbf-a34f-71edd3455c33.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:
+      
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.JOHNCONTAINERAPP_AZURE_CREDENTIALS }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: containerapps2.azurecr.io
+          registryUsername: ${{ secrets.JOHNCONTAINERAPP_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.JOHNCONTAINERAPP_REGISTRY_PASSWORD }}
+          containerAppName: john-containerapp
+          resourceGroup: rg-john-container-apps
+          imageToBuild: containerapps2.azurecr.io/john-containerapp:${{ github.sha }}
+          
+            
+
+     
+
